@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+
+
+    <!--bean = 对象,  new Hello()-->
+    <!--id = 变量名-->
+    <!--class = new的对象-->
+    <!--property 相当于给对象中的属性设值-->
+    <!--使用spring来创建对象，在spring中国都成为bean-->
+
+    <bean id="hello" class="com.zhao.pojo.Hello">
+        <property name="name" value="haozhao"></property>
+    </bean>
+
+
+
+</beans>

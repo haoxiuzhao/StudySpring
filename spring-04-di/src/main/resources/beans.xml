@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<bean id="address" class="com.zhao.pojo.Address">
+    <property name="address" value="Beijing"></property>
+</bean>
+    <bean id="student" class="com.zhao.pojo.Student">
+        <property name="address" ref="address"></property>
+        <property name="name" value="honglingjin"></property>
+        <!--        数组注入-->
+        <property name="books">
+            <array>
+                <value>三国</value>
+                <value>水浒</value>
+                <value>西游</value>
+            </array>
+        </property>
+        <!-- list-->
+        <property name="hobbies">
+            <list>
+                <value>eat</value>
+                <value>play</value>
+                <value>sleep</value>
+            </list>
+        </property>
+       <!--  键值对      -->
+        <property name="card">
+            <map>
+                <entry key="1" value="11"></entry>
+                <entry key="2" value="22"></entry>
+            </map>
+        </property>
+          <!--        集合-->
+        <property name="game">
+            <set>
+                <value>chiji</value>
+                <value>NBA</value>
+                <value>wangzhe</value>
+            </set>
+        </property>
+
+        <property name="wife">
+            <null></null>
+        </property>
+
+        <property name="infor">
+            <props>
+                <prop key="id">2020</prop>
+                <prop key="name">spring</prop>
+            </props>
+        </property>
+
+    </bean>
+
+
+
+</beans>
