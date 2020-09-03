@@ -492,64 +492,69 @@ public class User {
 
 1. 环境搭建：一个人有两个宠物
 
-2. Byname自动装配：byname会自动查找，和自己对象set对应的值对应的id
+2. byName自动装配：byName会自动查找，和自己对象set对应的值对应的id
 
-   保证所有id唯一，并且和set注入的值一致
+   保证所有id唯一，**并且和set注入的值一致，id名字可以和set后面名字一样，或者set后面名字只是首字母大写都可以，如果id名字首字母大写，那会报错**
 
-3. Bytype自动装配：byType会自动查找，和自己对象属性相同的bean
+3. byType自动装配：byType会自动查找，和自己对象属性相同的bean
 
-   保证所有的class唯一
+   保证所有的class唯一, 这里还是需要set方法，但是set后面方法名字没有要求，只要包含set方法就可以。
 
 ```java
+package com.zhao.pojo;
+
 public class Cat {
-    public void jiao(){
-        System.out.println("miao");
+    public void shout(){
+        System.out.println("miao miao");
     }
 }
+
 ```
 
 ````java
+package com.zhao.pojo;
+
 public class Dog {
-
-    public void jiao(){
-        System.out.println("wow");
+    public void shout(){
+        System.out.println("wang wang");
     }
-
 }
+
 ````
 
 ```java
-package com.pojo;
+package com.zhao.pojo;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.ImportResource;
 
 
-public class People {
-
+public class Person {
+    //如果显示定义了Autowired的required属性为false，说明这个对象可以为null，否则不允许为空
+    @Autowired(required = false)
     private Cat cat;
+    //@Autowired
+   // @Qualifier(value = "dog12")
+    //@Resource
     private Dog dog;
-    private String name;
-
-    @Override
-    public String toString() {
-        return "People{" +
-                "cat=" + cat +
-                ", dog=" + dog +
-                ", name='" + name + '\'' +
-                '}';
-    }
+    private String  name;
 
     public Cat getCat() {
         return cat;
     }
 
-    public void setCat(Cat cat) {
-        this.cat = cat;
-    }
+//    public void setCat(Cat cat) {
+//        this.cat = cat;
+//    }
 
     public Dog getDog() {
         return dog;
     }
 
-    public void setDog(Dog dog) {
+    //autowire="byname"是通过set后面的名字来进行匹配注入的，也就是bean id=dog22，如果setDog22就不会报错，如果set不是这个名字就会报错
+    //跟person中定义的Dog dog对象名字无关
+    public void setDog12(Dog dog) {
         this.dog = dog;
     }
 
@@ -560,27 +565,47 @@ public class People {
     public void setName(String name) {
         this.name = name;
     }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "cat=" + cat +
+                ", dog=" + dog +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }
 
 ```
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-        https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <beans xmlns="http://www.springframework.org/schema/beans"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:context="http://www.springframework.org/schema/context"
+           xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
 
-    <bean id="cat11" class="com.pojo.Cat"/>
-    <bean id="dog" class="com.pojo.Dog"/>
-    <!--byname会自动查找，和自己对象set对应的值对应的id-->
-    <!--<bean id="people" class="com.pojo.People" autowire="byName">-->
-        <!--<property name="name" value="hou"></property>-->
-    <!--</bean>-->
-    <!--byType会自动查找，和自己对象属性相同的bean-->
-    <bean id="people" class="com.pojo.People" autowire="byType">
-        <property name="name" value="hou"></property>
+        <context:annotation-config/>
+
+
+    <bean class="com.zhao.pojo.Cat"/>
+<!--    <bean  class="com.zhao.pojo.Dog"/>-->
+    <bean id="dog12" class="com.zhao.pojo.Dog"/>
+
+
+
+
+    <!-- autowire：byName会自动查找在容器上下文中查找，和自己对象set方法后面的值对应的beanid   -->
+    <!-- autowire：byType会自动在容器上下文中查找，和自己对象属性类型相同的bean   -->
+    <bean id="person" class="com.zhao.pojo.Person" autowire="byName">
+<!--        <property name="cat" ref="cat"/>-->
+<!--        <property name="dog" ref="dog"/>-->
+<!--        <property name="name" value="zhaozhao"/>-->
     </bean>
+
 
 </beans>
 ```
@@ -614,7 +639,7 @@ jdk1.5支持的注解，spring2.5支持的注解
 </beans>
 ```
 
-@Autowire
+@Autowired
 
 在属性上个使用，也可以在set上使用
 
@@ -678,9 +703,9 @@ public class People {
 
 都是用来自动装配的，都可以放在属性字段上
 
-- @autowire通过byType实现，而且必须要求这个对象存在
-
-- @resource默认通过byName实现，如果找不到，通过byType实现，如果两个都找不到得情况下就会报错
+- @Autowire通过byType实现，而且必须要求这个对象存在
+- @Resource默认通过byName实现，如果找不到，通过byType实现，如果两个都找不到得情况下就会报错
+- 还是都是需要xml文件的，文件中也必须要有 <bean  class="com.zhao.pojo.Dog"/>
 
 
 
