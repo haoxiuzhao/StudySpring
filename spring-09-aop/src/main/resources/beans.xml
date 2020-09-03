@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <beans xmlns="http://www.springframework.org/schema/beans"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:aop="http://www.springframework.org/schema/aop"
+           xmlns:context="http://www.springframework.org/schema/context"
+           xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+         https://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
+
+        <context:annotation-config/>
+
+<!--    注册·beans-->
+    <bean id="userService" class="com.zhao.service.UserServiceImpl"/>
+    <bean id="log"  class="com.zhao.log.Log"/>
+    <bean id="afterLog" class="com.zhao.log.AfterLog"/>
+<!--  方式一使用原生spring API接口  -->
+<!--    配置aop,导入aop约束-->
+<aop:config>
+     <!--    切入点：expression：表达式，execution（要执行的位置）-->
+    <aop:pointcut id="pointcut" expression="execution(* com.zhao.service.UserServiceImpl.*(..) )"/>
+    <!--   执行环绕增强 -->
+     <!--    下面这句话的意思就是将Log类切入到pointcut这个execution方法上面-->
+    <aop:advisor advice-ref="log" pointcut-ref="pointcut"/>
+    <aop:advisor advice-ref="afterLog" pointcut-ref="pointcut"/>
+</aop:config>
+
+
+
+
+
+
+</beans>

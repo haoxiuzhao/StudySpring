@@ -1123,7 +1123,18 @@ public class Client {
 
   
 
-## 11.AOP
+  动态代理的好处：
+
+  - 可以使真实角色的操作更加纯粹，不用关注一些公共的业务
+
+  - 公共也就交给代理角色，实现了业务的分工
+  - 公共业务发生扩展的时候，方便集中管理
+  - 一个动态代理类代理的是一个接口，一般就是对应的一类业务
+  - 一个动态代理类可以代理多个类，只要是实现了同一个接口即可
+
+  
+
+## 11.AOP（超级重点）
 
 ```xml
 <dependencies>
@@ -1139,88 +1150,164 @@ public class Client {
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:aop="http://www.springframework.org/schema/aop"
-       xsi:schemaLocation="http://www.springframework.org/schema/beanss
+    <beans xmlns="http://www.springframework.org/schema/beans"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:aop="http://www.springframework.org/schema/aop"
+           xmlns:context="http://www.springframework.org/schema/context"
+           xsi:schemaLocation="http://www.springframework.org/schema/beans
         https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/aop
-        https://www.springframework.org/schema/aop/spring-aop.xsd">
+         https://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
 
-    <!--注册bean-->
-    <bean id="userservice" class="com.service.UserServiceImp"></bean>
-    <bean id="log" class="com.log.Log"/>
-    <bean id="afterlog" class="com.log.AfterLog"/>
+        <context:annotation-config/>
 
-    <!--配置aop-->
-    <aop:config>
-        <!--切入点：expression:表达式，execution（要执行的位置）-->
-        <aop:pointcut id="point" expression="execution(* com.service.UserServiceImp.*(..))"/>
-        <!--执行环绕-->
-        <aop:advisor advice-ref="log" pointcut-ref="point"/>
-        <aop:advisor advice-ref="afterlog" pointcut-ref="point"/>
-    </aop:config>
+<!--    注册·beans-->
+    <bean id="userService" class="com.zhao.service.UserServiceImpl"/>
+    <bean id="log"  class="com.zhao.log.Log"/>
+    <bean id="afterLog" class="com.zhao.log.AfterLog"/>
+<!--  方式一使用原生spring API接口  -->
+<!--    配置aop,导入aop约束-->
+<aop:config>
+     <!--    切入点：expression：表达式，execution（要执行的位置）-->
+    <aop:pointcut id="pointcut" expression="execution(* com.zhao.service.UserServiceImpl.*(..) )"/>
+    <!--   执行环绕增强 -->
+     <!--    下面这句话的意思就是将Log类切入到pointcut这个execution方法上面-->
+    <aop:advisor advice-ref="log" pointcut-ref="pointcut"/>
+    <aop:advisor advice-ref="afterLog" pointcut-ref="pointcut"/>
+</aop:config>
+
+
+
+
+
 
 </beans>
 ```
 
-```java
-public class UserServiceImp implements UserService {
+- 其中，在设置切入点的方法时，execution(* com.zhao.service.UserServiceImpl.* *(..) )，*代表了在这个这个包下的所有方法，如果是制定了一个方法，比如说是execution(* com.zhao.service.UserServiceImpl.add(..) )，也即是说在调用add方法时，才会可以进行切入进去。如果不是add方法，程序可以执行方法，但是切入是不会执行的。
 
-
-    public void add() {
-        System.out.println("add");
-    }
-
-    public void delete() {
-        System.out.println("delete");
-    }
-
-    public void query() {
-        System.out.println("query");
-    }
-
-    public void update() {
-        System.out.println("update");
-    }
-}
+```xml
+<aop:pointcut id="pointcut" expression="execution(* com.zhao.service.UserServiceImpl.*(..) )"/>
 ```
 
+测试类：
+
 ```java
+import com.zhao.service.UserService;
+import com.zhao.service.UserServiceImpl;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MyTest {
+    public static void main(String[] args) {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+        //动态代理代理的是接口
+       UserService userService= context.getBean("userService", UserService.class);
+       userService.delete();
+    }
+}
+
+```
+
+
+
+service接口：
+
+```java
+package com.zhao.service;
+
+public interface UserService {
+    public void add();
+    public void update();
+    public void delete();
+    public void selete();
+
+}
+
+```
+
+service接口实现类;
+
+```java
+package com.zhao.service;
+
+public class UserServiceImpl  implements UserService{
+    @Override
+    public void add() {
+        System.out.println("增加了一个用户");
+    }
+
+    @Override
+    public void update() {
+        System.out.println("更新了一个用户");
+
+    }
+
+    @Override
+    public void delete() {
+        System.out.println("删除了一个用户");
+
+    }
+
+    @Override
+    public void selete() {
+        System.out.println("查询了一个用户");
+
+    }
+}
+
+```
+
+在切面插入的两个方法或者两个功能：
+
+befor log：
+
+```java
+package com.zhao.log;
+
 import org.springframework.aop.MethodBeforeAdvice;
 
 import java.lang.reflect.Method;
 
 public class Log implements MethodBeforeAdvice {
-    //method：要执行的目标对象的方法
-    //args：参数
-    //target：目标对象
+
+    //method，要执行的目标对象的方法，args参数，target目标对象
+    @Override
     public void before(Method method, Object[] args, Object target) throws Throwable {
-        System.out.println(target.getClass().getName()+method.getName());
+        System.out.println(target.getClass().getName()+"的"+method.getName()+"被执行了");
     }
 }
+
 ```
 
+after log；
+
 ```java
+package com.zhao.log;
+
+import org.springframework.aop.AfterReturningAdvice;
+
+import java.lang.reflect.Method;
+
 public class AfterLog implements AfterReturningAdvice {
-
-    //returnVaule: 返回值
+    //returnvalue是返回值
+    @Override
     public void afterReturning(Object returnValue, Method method, Object[] args, Object target) throws Throwable {
-        System.out.println(method.getName()+returnValue);
+        System.out.println("执行了"+method.getName()+"方法，返回结果为"+returnValue);
+
     }
 }
+
 ```
 
-```java
-public class Mytest {
-    public static void main(String[] args) {
-        ApplicationContext context = new ClassPathXmlApplicationContext("ApplcationContext.xml");
-        //动态代理代理的是接口
-        UserService userService = (UserService) context.getBean("userservice");
-        userService.add();
-    }
-}
-```
+输出结果：
+
+![image-20200903223752660](C:\Users\haoxi\AppData\Roaming\Typora\typora-user-images\image-20200903223752660.png)
+
+
+
+
 
 方法二：自定义来实现AOP【主要是切面定义】
 
