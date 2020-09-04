@@ -1146,7 +1146,7 @@ public class Client {
 </dependencies>
 ```
 
-方法一：使用spring接口【springAPI接口实现】
+#### 方法一：使用spring接口【springAPI接口实现】
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -1309,104 +1309,200 @@ public class AfterLog implements AfterReturningAdvice {
 
 
 
-方法二：自定义来实现AOP【主要是切面定义】
+#### 方法二：自定义来实现AOP【主要是切面定义】
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:aop="http://www.springframework.org/schema/aop"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    <beans xmlns="http://www.springframework.org/schema/beans"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:aop="http://www.springframework.org/schema/aop"
+           xmlns:context="http://www.springframework.org/schema/context"
+           xsi:schemaLocation="http://www.springframework.org/schema/beans
         https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/aop
-        https://www.springframework.org/schema/aop/spring-aop.xsd">
+         https://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
 
-    <!--注册bean-->
-    <bean id="userservice" class="com.service.UserServiceImp"></bean>
-    <bean id="log" class="com.log.Log"/>
-    <bean id="afterlog" class="com.log.AfterLog"/>
+        <context:annotation-config/>
 
-    <bean id="diy" class="com.diy.DiyPointcut">
-    </bean>
+<!--    注册·beans-->
+    <bean id="userService" class="com.zhao.service.UserServiceImpl"/>
+    <bean id="log"  class="com.zhao.log.Log"/>
+    <bean id="afterLog" class="com.zhao.log.AfterLog"/>
+<!--  方式一使用原生spring API接口  -->
+<!--    配置aop,导入aop约束-->
+<!--<aop:config>-->
+<!--     &lt;!&ndash;    切入点：expression：表达式，execution（要执行的位置）&ndash;&gt;-->
+<!--    <aop:pointcut id="pointcut" expression="execution(* com.zhao.service.UserServiceImpl.*(..) )"/>-->
+<!--    &lt;!&ndash;   执行环绕增强 &ndash;&gt;-->
+<!--     &lt;!&ndash;    下面这句话的意思就是将Log类切入到pointcut这个execution方法上面&ndash;&gt;-->
+<!--    <aop:advisor advice-ref="log" pointcut-ref="pointcut"/>-->
+<!--    <aop:advisor advice-ref="afterLog" pointcut-ref="pointcut"/>-->
+<!--</aop:config>-->
+
+   <!--  方式二：自定义类  -->
+    <bean id="diy" class="com.zhao.diy.DiyPointCut"/>
     <aop:config>
-        <!--自定义切面-->
+         <!-- 自定义切面，ref要引用的类-->
         <aop:aspect ref="diy">
-            <!--切入点-->
-            <aop:pointcut id="point" expression="execution(* com.service.UserServiceImp.*(..))"/>
+         <!--   切入点-->
+            <aop:pointcut id="point" expression="execution(* com.zhao.service.UserServiceImpl.*(..))"/>
+            <!--   通知-->
             <aop:before method="before" pointcut-ref="point"/>
             <aop:after method="after" pointcut-ref="point"/>
+
         </aop:aspect>
     </aop:config>
 
+
+
+
 </beans>
 ```
 
-```java
-public class DiyPointcut {
+要进行切入得类：
 
+```java
+package com.zhao.diy;
+
+public class DiyPointCut {
     public void before(){
-        System.out.println("before");
+        System.out.println("=====方法执行前======");
     }
 
     public void after(){
-        System.out.println("after");
+        System.out.println("=====方法执行后======");
     }
 }
+
 ```
 
-方法三：注解方式
+#### 方法三：注解方式
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:aop="http://www.springframework.org/schema/aop"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    <beans xmlns="http://www.springframework.org/schema/beans"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:aop="http://www.springframework.org/schema/aop"
+           xmlns:context="http://www.springframework.org/schema/context"
+           xsi:schemaLocation="http://www.springframework.org/schema/beans
         https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/aop
-        https://www.springframework.org/schema/aop/spring-aop.xsd">
-    
-    <bean id="ann" class="com.diy.Annotation"></bean>
+         https://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
+
+        <context:annotation-config/>
+
+<!--    注册·beans-->
+    <bean id="userService" class="com.zhao.service.UserServiceImpl"/>
+    <bean id="log"  class="com.zhao.log.Log"/>
+    <bean id="afterLog" class="com.zhao.log.AfterLog"/>
+<!--  方式一使用原生spring API接口  -->
+<!--    配置aop,导入aop约束-->
+<!--<aop:config>-->
+<!--     &lt;!&ndash;    切入点：expression：表达式，execution（要执行的位置）&ndash;&gt;-->
+<!--    <aop:pointcut id="pointcut" expression="execution(* com.zhao.service.UserServiceImpl.*(..) )"/>-->
+<!--    &lt;!&ndash;   执行环绕增强 &ndash;&gt;-->
+<!--     &lt;!&ndash;    下面这句话的意思就是将Log类切入到pointcut这个execution方法上面&ndash;&gt;-->
+<!--    <aop:advisor advice-ref="log" pointcut-ref="pointcut"/>-->
+<!--    <aop:advisor advice-ref="afterLog" pointcut-ref="pointcut"/>-->
+<!--</aop:config>-->
+
+   <!--  方式二：自定义类  -->
+<!--    <bean id="diy" class="com.zhao.diy.DiyPointCut"/>-->
+<!--    <aop:config>-->
+<!--         &lt;!&ndash; 自定义切面，ref要引用的类&ndash;&gt;-->
+<!--        <aop:aspect ref="diy">-->
+<!--         &lt;!&ndash;   切入点&ndash;&gt;-->
+<!--            <aop:pointcut id="point" expression="execution(* com.zhao.service.UserServiceImpl.*(..))"/>-->
+<!--            &lt;!&ndash;   通知&ndash;&gt;-->
+<!--            <aop:before method="before" pointcut-ref="point"/>-->
+<!--            <aop:after method="after" pointcut-ref="point"/>-->
+
+<!--        </aop:aspect>-->
+<!--    </aop:config>-->
+
+    <!--  方式二：注解实现  -->
+    <bean id="annotationPointCut" class="com.zhao.diy.AnnotationPointCut"/>
+    <!-- 开启注解支持！ 基于接口 JDK（默认为proxy-target-class是false，当为true时选择cglib）     基于类 cflib   -->
+<!--    <aop:aspectj-autoproxy proxy-target-class="false"/>-->
     <aop:aspectj-autoproxy/>
-    <!--注册bean-->
-    <bean id="userservice" class="com.service.UserServiceImp"></bean>
-    
+
+
+
+
 </beans>
 ```
 
+新增切面类：
+
 ```java
+package com.zhao.diy;
+
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 
-@Aspect  //标注这个类是一个切面
-public class Annotation {
-
-    @Before("execution(* com.service.UserServiceImp.*(..))")
+//方式三：使用注解方式实现AOP
+@Aspect //标注这个类是一个切面
+public class AnnotationPointCut {
+    @Before("execution(* com.zhao.service.UserServiceImpl.*(..))")
     public void before(){
-        System.out.println("before");
+        System.out.println("=====方法执行前======");
     }
 
-    @After("execution(* com.service.UserServiceImp.*(..))")
+    @After("execution(* com.zhao.service.UserServiceImpl.*(..))")
     public void after(){
-        System.out.println("after");
+        System.out.println("=====方法执行后======");
     }
+  
+   //在环绕增强中，我们可以给定一个参数，代表我们要获取处理的切入的点
+    @Around("execution(* com.zhao.service.UserServiceImpl.*(..))")
+    public void around(ProceedingJoinPoint jp) throws Throwable{
+        System.out.println("=====环绕前======");
+        Signature signature=jp.getSignature();//获得签名
+        System.out.println("signature:"+signature);
 
-    //在环绕增强中，我们可以给地暖管一个参数，代表我们要获取切入的点
-    @Around("execution(* com.service.UserServiceImp.*(..))")
-    public void around(ProceedingJoinPoint joinPoint) throws Throwable {
-        System.out.println("around");
-
-        Object proceed = joinPoint.proceed();
-
-        System.out.println("after around");
+        Object proceed=jp.proceed();//执行方法
+        System.out.println("=====环绕后======");
+        System.out.println("proceed:"+proceed);
     }
 }
+
+```
+
+测试类没有变化;
+
+```java
+import com.zhao.service.UserService;
+import com.zhao.service.UserServiceImpl;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MyTest {
+    public static void main(String[] args) {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+        //动态代理代理的是接口
+       UserService userService= context.getBean("userService", UserService.class);
+       userService.delete();
+    }
+}
+
 ```
 
 
+
+执行结果如下: 
+
+![image-20200904125923087](C:\Users\hytd\AppData\Roaming\Typora\typora-user-images\image-20200904125923087.png)
+
+加入signature后的：
+
+![image-20200904130207280](C:\Users\hytd\AppData\Roaming\Typora\typora-user-images\image-20200904130207280.png)
 
 ## 12. 整合mybatis
 
